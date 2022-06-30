@@ -1,0 +1,122 @@
+<html>
+  <head> </head>
+  <body>
+    <script>
+      var canvas,
+        ctx,
+        sh = 2000,
+        sw = 2000,
+        premap,
+        map,
+        vi = 2;
+
+      canvas = document.createElement("canvas");
+      canvas.width = sw;
+      canvas.height = sh;
+      canvas.style.border = "1px solid #000";
+
+      ctx = canvas.getContext("2d");
+      document.body.appendChild(canvas);
+
+      function Create2DArray(rows, columns) {
+        var x = new Array(rows);
+
+        for (var i = 0; i < rows; i++) {
+          x[i] = new Array(columns);
+        }
+
+        return x;
+      }
+
+      map = Create2DArray(sw / 10, sh / 10);
+      premap = Create2DArray(sw / 10, sh / 10);
+
+      for (var j = 0; j < sh / 10; j++) {
+        for (var i = 0; i < sw / 10; i++) {
+          map[i][j] = 0;
+          premap[i][j] = 0;
+        }
+      }
+
+      var DNA = [];
+
+      function gene() {
+        for (var i = 0; i < (2 * vi + 1) ** 2; i++) {
+          DNA.push(Math.round(Math.random()));
+        }
+      }
+
+      gene();
+
+      document.addEventListener("click", function (event) {
+        map[Math.round(event.clientX / 10)][Math.round(event.clientY / 10)] = 1;
+        ctx.fillStyle = "#212121";
+        ctx.fillRect(0, 0, sw, sh);
+        draw();
+      });
+
+      function draw() {
+        for (var j = 0; j < sh / 10; j++) {
+          for (var i = 0; i < sw / 10; i++) {
+            if (map[i][j] == 1) {
+              ctx.fillStyle = "black";
+              ctx.fillRect(i * 10, j * 10, 10, 10);
+            }
+
+            if (map[i][j] == 2) {
+              ctx.fillStyle = "red";
+              ctx.fillRect(i * 10, j * 10, 10, 10);
+            }
+          }
+        }
+      }
+
+      function prefab() {
+        let nears = 0;
+
+        for (var j = 0; j < sh / 10; j++) {
+          for (var i = 0; i < sw / 10; i++) {
+            for (var x = -vi; x <= vi; x++) {
+              for (var y = -vi; y <= vi; y++) {
+                if (
+                  i + x > 0 &&
+                  i + x < sw / 10 &&
+                  y + j > 0 &&
+                  y + j < sh / 10
+                ) {
+                  if (map[i + x][y + j] == 1 && !(x == y && x == 0)) {
+                    nears++;
+                  }
+                }
+              }
+            }
+
+            premap[i][j] = nears;
+
+            nears = 0;
+          }
+        }
+      }
+
+      function replace() {
+        for (var j = 0; j < sh/10; j++) {
+          for (var i = 0; i < sw/10; i++) {
+            map[i][j] = DNA[premap[i][j]];
+          }
+        }
+      }
+
+      setInterval(function () {
+        ctx.fillStyle = "#212121";
+        ctx.fillRect(0, 0, sw, sh);
+
+        prefab();
+        replace();
+        draw();
+
+      }, 100);
+
+    </script>
+  </body>
+  <html></html>
+</html>
